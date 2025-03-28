@@ -14,7 +14,7 @@ options.add_argument('--headless')  # Si tu veux exécuter sans ouvrir le naviga
 service = Service("./chromedriver.exe")
 
 driver = webdriver.Chrome(service=service, options=options)
-
+print("je teste la push")
 
 logging.basicConfig(level=logging.INFO)
 
