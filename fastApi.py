@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 import pandas as pd
-from scrappin import scrap_data 
+#from scrappin import scrap_data 
 import importlib.util
 import subprocess
 
 
 app = FastAPI()
-EXCEL_FILE_PATH = "C:/Users/user/webScrapping/annonces.xlsx"
+EXCEL_FILE_PATH = "C:/Users/user/webScrapping/python/annonces.xlsx"
 
 @app.get("/AllAnnonces")
 async def root():
