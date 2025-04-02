@@ -4,17 +4,18 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains 
+from datetime import datetime, timedelta
+
 import pandas as pd
 import logging
-
-# Configurer ChromeOptions
+import re
 options = Options()
-options.add_argument('--headless')  # Si tu veux exécuter sans ouvrir le navigateur
+options.add_argument('--headless')  
 
 service = Service("./chromedriver.exe")
 
 driver = webdriver.Chrome(service=service, options=options)
-print("je teste la push")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,71 +27,82 @@ annonces_elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "/
 
 annonces_data = []
 
+def calculer_date(dure_publication):
+    maintenant = datetime.now()  # Date actuelle
+    match = re.search(r"(\d+)\s*(jour|heure|minute|day|hour|minute)s?", duree, re.IGNORECASE)
+    
+    if not match:
+        return maintenant.strftime('%Y-%m-%d %H:%M:%S')  # Retourne la date actuelle si format inconnu
+    
+    nombre = int(match.group(1))  # Extrait le nombre
+    unite = match.group(2).lower()  # Convertir en minuscule pour éviter les erreurs
+
+    # Déterminer la durée à soustraire
+    if "jour" in unite or "day" in unite:
+        date_publication = maintenant - timedelta(days=nombre)
+    elif "heure" in unite or "hour" in unite:
+        date_publication = maintenant - timedelta(hours=nombre)
+    elif "minute" in unite:
+        date_publication = maintenant - timedelta(minutes=nombre)
+    else:
+        date_publication = maintenant  # Valeur par défaut
+
+    return date_publication.strftime('%Y-%m-%d %H:%M:%S')  # Format lisible
+
+
 for annonce in annonces_elements:
-    try:
-        # Extraire le lien de l'annonce
+
         lien = annonce.find_element(By.XPATH, ".//a").get_attribute("href")
         
-        # Ouvrir le lien dans un nouvel onglet
         driver.execute_script("window.open(arguments[0]);", lien)
-        driver.switch_to.window(driver.window_handles[1])  # Passer à l'onglet de la page de détails
+        driver.switch_to.window(driver.window_handles[1])  
         
-        # Attendre que la page de détails soit chargée
-        wait.until(EC.presence_of_element_located((By.XPATH, "//h1")))  # Attendre que le titre soit chargé
+        wait.until(EC.presence_of_element_located((By.XPATH, "//h1")))  
         
         # Extraire les informations de la page de détails
         titre = driver.find_element(By.XPATH, "//h1").text
         prix = driver.find_element(By.XPATH, "//data").text if driver.find_elements(By.XPATH, "//data") else "N/A"
-        
-        # Type de bien
         type_bien = driver.find_element(By.XPATH, "//div[contains(@class, 'flex')]//span[contains(text(), 'Type de transaction')]/following-sibling::span").text if driver.find_elements(By.XPATH, "//div[contains(@class, 'flex')]//span[contains(text(), 'Type de transaction')]/following-sibling::span") else "N/A"
-        # Localisation
-        localisation = driver.find_element(By.XPATH, "//span[contains(@class, 'location')]").text if driver.find_elements(By.XPATH, "//span[contains(@class, 'location')]") else "N/A"
-        
-        # Superficie
+        loc_details =driver.find_element(By.XPATH, "//div[contains(@class, 'flex items-center')]//span[contains(text(), ',')]").text if driver.find_elements(By.XPATH, "//div[contains(@class, 'flex items-center')]//span[contains(text(), ',')]") else "N/A"
+        ville, duree = [x.strip() for x in loc_details.split(',')]
         superficie = driver.find_element(By.XPATH, "//div[contains(@class, 'flex')]//span[contains(text(), 'Superficie')]/following-sibling::span").text if driver.find_elements(By.XPATH, "//div[contains(@class, 'flex')]//span[contains(text(), 'Superficie')]/following-sibling::span") else "N/A"
-        # Description
-        description = driver.find_element(By.XPATH, "//p[contains(@class, 'text-gray-700 font-semibold text-xl mb-4')]//p").text if driver.find_elements(By.XPATH, "//p[contains(@class, 'text-gray-700 font-semibold text-xl mb-4')]//p") else "N/A"        
-        # Contact
-        contact = driver.find_element(By.XPATH, "//a[contains(@class, 'text-gray-600')]").text if driver.find_elements(By.XPATH, "//a[contains(@class, 'text-gray-600')]") else "N/A"
-        
-        # Date de publication
-        date_publication = driver.find_element(By.XPATH, "//span[contains(@class, 'date')]").text if driver.find_elements(By.XPATH, "//span[contains(@class, 'date')]") else "N/A"
+        description = driver.find_element(By.XPATH, "//p[contains(@class, 'whitespace-pre-line')]").text
+        afficher_numero=driver.find_element(By.XPATH, "//button[contains(., 'Afficher le numéro')] | //span[contains(., 'Afficher le numéro')]").click()
+        numero = WebDriverWait(driver, 10).until(
+    EC.visibility_of_element_located((By.XPATH, '//a[starts-with(@href, "tel:")]'))
+).text
+        date_exacte=calculer_date(duree)
+       
+    
         
         # Ajouter les informations de l'annonce à la liste
         annonces_data.append({
             "Titre": titre,
             "Prix": prix,
             "Type de bien": type_bien,
-            "Localisation": localisation,
+            "Localisation": ville,
             "Superficie": superficie,
             "Description": description,
-            "Contact": contact,
-            "Date de publication": date_publication,
+            "Contact": numero,
+            "Date de publication": date_exacte,
             "Lien": lien
         })
 
         logging.info(f"Annonce extraite:  {"titre:"+titre} ")
-
         logging.info(f"Annonce extraite:  {"prix:"+prix} ")
         logging.info(f"Annonce extraite:  {"type:"+type_bien}")
-        logging.info(f"Annonce extraite:  {"localisation:"+localisation}")
+        logging.info(f"Annonce extraite:  {"localisation:"+ville}")
         logging.info(f"Annonce extraite:  {"superficie:"+superficie}")
         logging.info(f"Annonce extraite:  {"description:"+description}")
-        logging.info(f"Annonce extraite:  {"contact:"+contact}")
-        logging.info(f"Annonce extraite:  {"date de publication:"+date_publication}")
+        logging.info(f"Annonce extraite:  {"contact:"+numero}")
+        logging.info(f"Annonce extraite:  {"date de publication:"+date_exacte}")
         logging.info(f"Annonce extraite:  {"lien:"+lien}")
         logging.info(f" ******")
 
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
 
-    except Exception as e:
-        logging.error(f"Erreur lors de l'extraction des données d'une annonce: {e}")
-        if len(driver.window_handles) > 1:
-            driver.close()
-            driver.switch_to.window(driver.window_handles[0])
-
+   
 df = pd.DataFrame(annonces_data)
 
 df.to_excel("annonces.xlsx", index=False, engine='openpyxl')
