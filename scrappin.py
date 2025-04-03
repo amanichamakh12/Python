@@ -105,7 +105,7 @@ for annonce in annonces_elements:
    
 df = pd.DataFrame(annonces_data)
 
-df.to_excel("annonces.xlsx", index=False, engine='openpyxl')
+df.to_excel("C:/Users/user/Downloads/Python/annonces.xlsx", index=False, engine='openpyxl')
 logging.info("Données enregistrées en fichier Excel.")
 
 driver.quit()

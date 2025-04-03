@@ -6,7 +6,7 @@ import subprocess
 
 
 app = FastAPI()
-EXCEL_FILE_PATH = "C:/Users/user/webScrapping/python/annonces.xlsx"
+EXCEL_FILE_PATH = "C:/Users/user/Downloads/Python/annonces.xlsx"
 
 @app.get("/AllAnnonces")
 async def root():
@@ -24,7 +24,7 @@ async def root():
 async def scrape():
     try:
         # Exécuter le script de scraping via subprocess
-        result = subprocess.run(["python", "C:/Users/user/webScrapping/scrappin.py"], capture_output=True, text=True)
+        result = subprocess.run(["python", "C:/Users/user/Downloads/Python/scrappin.py"], capture_output=True, text=True)
         
         # Vérifier si l'exécution du script s'est bien déroulée
         if result.returncode == 0:
