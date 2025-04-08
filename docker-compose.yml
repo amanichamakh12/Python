@@ -1,0 +1,24 @@
+services:
+  fastapi:
+    build: .
+    ports:
+      - "8000:8000"  
+    volumes:
+      - .:/code
+    working_dir: /code/api
+    command: uvicorn fastApi:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped 
+
+  dashapp:
+    build: .
+    ports:
+      - "8060:8060" 
+    volumes:
+      - .:/code
+    working_dir: /code
+    command: python app/dashApp.py
+    depends_on:
+      - fastapi
+    restart: unless-stopped  
+    environment:
+      - FASTAPI_URL=http://fastapi:8000/AllCourses

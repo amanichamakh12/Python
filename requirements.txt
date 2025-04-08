@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pandas
+dash
+dash-bootstrap-components
+plotly
+requests
+selenium
+openpyxl
+gunicorn
