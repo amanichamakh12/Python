@@ -16,12 +16,14 @@ app.add_middleware(
 )
 
 app = FastAPI()
-EXCEL_FILE_PATH = "/app/annonces.json"
+Annoncesfile_in_docker = "/app/annonces.json"#pour tester dans docker
+jsonFile="C:/Users/user/Downloads/Python/annonces.json"#pour tester localement
 
 @app.get("/AllAnnonces")
 async def root():
     try:
-        df = pd.read_json(EXCEL_FILE_PATH)
+        df = pd.read_json(Annoncesfile_in_docker)
+        #df=pd.read_json(jsonFile)#pour tester localement
         df = df.fillna("")
 
         data = df.to_dict(orient="records")

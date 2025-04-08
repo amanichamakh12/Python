@@ -59,7 +59,6 @@ for annonce in annonces_elements:
         
         wait.until(EC.presence_of_element_located((By.XPATH, "//h1")))  
         
-        # Extraire les informations de la page de détails
         titre = driver.find_element(By.XPATH, "//h1").text
         prix = driver.find_element(By.XPATH, "//data").text if driver.find_elements(By.XPATH, "//data") else "N/A"
         type_bien = driver.find_element(By.XPATH, "//div[contains(@class, 'flex')]//span[contains(text(), 'Type de transaction')]/following-sibling::span").text if driver.find_elements(By.XPATH, "//div[contains(@class, 'flex')]//span[contains(text(), 'Type de transaction')]/following-sibling::span") else "N/A"
@@ -75,7 +74,6 @@ for annonce in annonces_elements:
        
     
         
-        # Ajouter les informations de l'annonce à la liste
         annonces_data.append({
             "Titre": titre,
             "Prix": prix,
@@ -105,9 +103,7 @@ for annonce in annonces_elements:
    
 df = pd.DataFrame(annonces_data)
 
-#df.to_excel("C:/Users/user/Downloads/Python/annonces.xlsx", index=False, engine='openpyxl')
 df.to_json("C:/Users/user/Downloads/Python/annonces.json")
-#logging.info("Données enregistrées en fichier Excel.")
 logging.info("Données enregistrées en fichier json.")
 
 
