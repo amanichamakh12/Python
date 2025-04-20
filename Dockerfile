@@ -5,23 +5,18 @@ WORKDIR /app
 
 # Copie des fichiers nécessaires
 COPY requirements.txt ./
-COPY fastApi.py ./
-COPY dashApp.py ./
+COPY api/fastApi.py ./
+COPY app/dashApp.py ./
+COPY . .
 
 # Installation des dépendances
 RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Étape 2 : Image finale
-FROM python:3.9-slim
-
-WORKDIR /app
 
 # Installation explicite d'uvicorn
 RUN pip install --no-cache-dir uvicorn
 
 # Copie et installation des autres dépendances
-COPY requirements.txt .
-COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
